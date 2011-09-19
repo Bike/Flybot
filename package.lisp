@@ -1,0 +1,2 @@
+(defpackage #:flybot
+  (:use #:cl))
