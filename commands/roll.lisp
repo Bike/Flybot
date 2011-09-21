@@ -406,7 +406,7 @@
   (unless (and (integerp count) (plusp count)) (irc-user-error "Can't roll ~a dice." count))
   (unless (and (integerp weight) (plusp weight)) (irc-user-error "Can't roll dice with ~a sides." weight))
   (unless (and (integerp keep) (< (abs keep) count)) (irc-user-error "Can't keep ~a dice of ~d." keep count))
-  (let ((initial (mapcar #'random (make-list count :initial-element weight))))
+  (let ((initial (mapcar #'(lambda (x) (1+ (random x))) (make-list count :initial-element weight))))
     (cond ((zerop keep)
 	   (when (< (length *dice-info*) 10) ;; ARBITRARY!
 	     (push initial *dice-info*))
@@ -422,7 +422,8 @@
 	       (push keeping *dice-info*))
 	     (reduce #'+ keeping))))))
 
-(defcmd roll (sender dest connection text)
+;;(defcmd roll (sender dest connection text)
+(defun bot-commands::roll (sender dest connection text)
   (let ((*package* (find-package :flybot))
 	(*dice-info* nil))
     (let ((total (eval (infix->prefix (read-delimited-list #\] (make-string-input-stream (roll-prep text)))))))

@@ -15,8 +15,9 @@
 
 (defun alias (alias fn)
   (declare (type symbol alias fn))
-  (setf (symbol-function (intern (symbol-name alias) :bot-commands))
-	(symbol-function (intern (symbol-name fn) :bot-commands))))
+;  (setf (symbol-function (intern (symbol-name alias) :bot-commands))
+;	(symbol-function (intern (symbol-name fn) :bot-commands))))
+  (setf (symbol-function alias) (symbol-function fn)))
 
 (defvar *timers* '()
   "A list of pairs (universal-time function).  When the time of a pair passes, the function is executed

@@ -2,7 +2,8 @@
 
 (defvar *vote-options* nil)
 ;; Really that should be in a closure for vote, but meh?, and also I don't know how (declare special) works.
-(defcmd vote (sender dest connection text)
+;;(defcmd vote (sender dest connection text)
+(defun bot-commands::vote (sender dest connection text)
   "Start a vote (:vote seconds option1 | option2 ...) or vote in the current election (:vote option)."
   (when (alpha-char-p (aref dest 0)) (irc-user-error "\"One man, one vote\", I see?"))
   (if *vote-options*
@@ -53,5 +54,5 @@
 					   (second (first winners))))
 				(setf *vote-options* nil))))
 		      *timers*)
-		(reply sender dest connection "Voting starts now!  You have ~d seconds to decide. ~:{~d) ~a~}~:^, ~}."
+		(reply sender dest connection "Voting starts now!  You have ~d seconds to decide. ~:{~d) ~a~:^, ~}."
 		       timeout (let ((c 0)) (mapcar (lambda (x) (incf c) (list c (first x))) *vote-options*)))))))))

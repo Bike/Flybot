@@ -1,10 +1,12 @@
 (in-package #:flybot)
 
-(defcmd echo (sender dest connection text)
+;(defcmd echo (sender dest connection text)
+(defun bot-commands::echo (sender dest connection text)
   "Echoes your text back to you.  Also known as SAY."
   (reply sender dest connection text))
-(alias 'say 'echo)
-(defcmd help (sender dest connection text)
+(alias 'bot-commands::say 'bot-commands::echo)
+;(defcmd help (sender dest connection text)
+(defun bot-commands::help (sender dest connection text)
   ":help lists all available commands.  :help cmdname prints the documentation for cmdname."
   (let ((text (remove #\Space text)))
     (if (zerop (length text))
