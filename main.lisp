@@ -19,10 +19,6 @@
 ;	(symbol-function (intern (symbol-name fn) :bot-commands))))
   (setf (symbol-function alias) (symbol-function fn)))
 
-(defvar *timers* '()
-  "A list of pairs (universal-time function).  When the time of a pair passes, the function is executed
-with no arguments and the pair is removed.")
-
 (defvar *nickname* "Spacebar")
 (defun nickname (name) (when (stringp name) (setf *nickname* name)))
 (defvar *password* nil)
@@ -39,9 +35,24 @@ with no arguments and the pair is removed.")
 
 (defvar *connections* '())
 
+;;; Here follows Shit To Make Timers Work.  Should use an external library like oconnore's multi-timers,
+;;;  but that's not in quicklisp at the moment and I'm not feeling that adventurous.
+
+#-sbcl
+(defvar *timers* '()
+  "A list of pairs (universal-time function).  When the time of a pair passes, the function is executed
+with no arguments and the pair is removed.")
+
+#-sbcl
+(defun register-timer (func seconds)
+  "Register a function to run in SECONDS seconds from the time REGISTER-TIMER is called."
+  (push (cons (+ (get-universal-time) seconds) func) *timers*))
+
+#-sbcl
 (defclass non-blocking-connection (irc:connection) ())
 
 ;; KLUDGE This is a pretty ugly way to do it.  Maybe edit the library to allow a :key non-blocking higher up.
+#-sbcl
 (defmethod irc::read-irc-message ((connection non-blocking-connection))
   (handler-case
       (let* ((msg-string (read-protocol-line-non-blocking connection))
@@ -51,6 +62,7 @@ with no arguments and the pair is removed.")
     (end-of-file ())))
 
 ;; or make read-protocol-line a generic function too and specialize on it, but that's still pretty duplicatey
+#-sbcl
 (defun read-protocol-line-non-blocking (connection)
   (multiple-value-bind (buf buf-len)
       (irc::read-sequence-until (irc:network-stream connection)
@@ -64,6 +76,7 @@ with no arguments and the pair is removed.")
 		buf-len))
       (irc::try-decode-line buf irc::*default-incoming-external-formats*))))
 
+#-sbcl
 (defmethod irc:read-message-loop ((connection non-blocking-connection))
   (loop while (irc::connectedp connection)
      do (irc:read-message connection)
@@ -73,6 +86,11 @@ with no arguments and the pair is removed.")
 			   (funcall (cdr x))
 			   t))
 		       *timers*))))
+
+#+sbcl
+(defun register-timer (func seconds)
+  "Register a function to run in SECONDS seconds from the time REGISTER-TIMER is called."
+  (sb-ext:schedule-timer (sb-ext:make-timer func) seconds))
 
 ;; Convenience wrapper around irc:connect.  (Making for four or so layers of wrappin internally...
 (defun connect (&key
@@ -84,7 +102,8 @@ with no arguments and the pair is removed.")
 		(pass *password*)
 		(logfile *log* log-p)
 		channels)
-  (let ((connection (irc:connect :connection-type 'non-blocking-connection ;; so that we can have a proper event loop.
+  (let ((connection (irc:connect :connection-type #-sbcl 'non-blocking-connection ;; so that we can have a proper event loop.
+				                  #+sbcl 'irc:connection ;; or just use sbcl's timers.
 				 :server server
 				 :port port
 				 :nickname nick
@@ -206,6 +225,7 @@ with no arguments and the pair is removed.")
 			"~a ERROR in ~a: ~a~%" (format-time) command err)))))))))
 
 ;; Doesn't work.
+#-(and)
 (defun run-bot (connection)
   (flet ((select-handler (fd)
 	   (declare (ignore fd))
