@@ -5,6 +5,7 @@
   "Echoes your text back to you.  Also known as SAY."
   (reply sender dest connection text))
 (alias 'bot-commands::say 'bot-commands::echo)
+(setf (documentation 'bot-commands::say 'function) "Echoes your text back to you.  Also known as ECHO.") ;; ugh
 ;(defcmd help (sender dest connection text)
 (defun bot-commands::help (sender dest connection text)
   ":help lists all available commands.  :help cmdname prints the documentation for cmdname."
