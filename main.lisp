@@ -31,7 +31,7 @@
 (defvar *log* t)
 (defun logfile (filename)
   (when (stringp filename)
-    (setf *log* (open filename :direction :output :if-exists :append))))
+    (setf *log* (open filename :direction :output :if-exists :append :if-does-not-exist :create))))
 
 (defvar *connections* '())
 
@@ -111,7 +111,8 @@ with no arguments and the pair is removed.")
 				 :realname realname
 				 :password pass
 				 :logging-stream (if log-p
-						     (open logfile :direction :input :if-exists :append)
+						     (open logfile :direction :output :if-exists :append
+							   :if-does-not-exist :create)
 						     logfile))))
     (push connection *connections*)
     (irc:add-hook connection 'irc::irc-privmsg-message 'command-dispatcher)
@@ -125,7 +126,8 @@ with no arguments and the pair is removed.")
 			       (if (listp x)
 				   (irc:join connection (first x) :password (second x)) ;; Join with password
 				   (irc:join connection x)))
-			 channels)))))
+			 channels)))
+    connection))
 
 (defun clear-commands ()
   (delete-package :bot-commands)
