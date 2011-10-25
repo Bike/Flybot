@@ -37,6 +37,7 @@
 
 ;;; Here follows Shit To Make Timers Work.  Should use an external library like oconnore's multi-timers,
 ;;;  but that's not in quicklisp at the moment and I'm not feeling that adventurous.
+;;; This hopeful future refactor is why this stuff isn't in a different file.
 
 #-sbcl
 (defvar *timers* '()
@@ -154,7 +155,7 @@ with no arguments and the pair is removed.")
 (defun reply (sender dest connection text &rest args)
   (if (string= dest (irc:nickname (irc:user connection)))
       (buffer-privmsg connection sender (apply #'format nil text args))
-      (buffer-privmsg connection dest (format nil "~a: ~?" sender text args))))
+      (buffer-privmsg connection dest (format nil "14~a: ~?" sender text args))))
 
 (defun action-msg (text)
   "Make a /me form message.  Use like (privmsg ... (action-msg \"dashes off to the store\"))"
