@@ -1,6 +1,11 @@
 ;;; Utilities for dealing with the Web.
 (in-package #:flybot)
 
+(define-condition http-status (condition)
+  ((code :reader code :initarg :code)
+   (reason :reader reason :initarg :reason))
+  (:documentation "Web access error, e.g. 404 Not Found"))
+
 ;; from ppcre docs
 (let ((url-regex (ppcre:create-scanner "[^a-z-A-Z0-9|\\-.]")))
   (defun url-encode (string)
@@ -14,3 +19,14 @@
 (defun get-request-uri (base-uri args)
   "Returns a PURI of the base-uri with ARGS (a \"proper alist\") appended as a GET HTTP request."
     (puri:uri (format nil "~a?~(~{~{~a=~a~}~^&~}~)" base-uri args)))
+
+(defun get-file-type (uri)
+  "Request and return the file type of a file on a server, as a string."
+  (multiple-value-bind (content status headers uri2 stream2 close reason)
+      (drakma:http-request uri :method :head)
+    (declare (ignore content uri2 stream2 close))
+    (if (= status 200)
+	(second
+	 (split-sequence:split-sequence #\/
+					(first (split-sequence:split-sequence #\; (cdr (assoc :content-type headers))))))
+	(error 'http-status :reason reason :code status))))
