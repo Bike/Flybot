@@ -12,7 +12,7 @@ If it's an alist, an entry of (COMMAND . n) indicates a cooldown time of n for t
   (typecase *cooldown*
     (integer *cooldown*)
     (cons (cdr (assoc name *cooldown*)))
-    (t (throw 'no-cooldown))))
+    (t (throw 'no-cooldown nil))))
 
 (defun ensure-cooled (name)
   "If NAME has not yet cooled, signal BOTSPAM to chastise the user.
