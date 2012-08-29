@@ -1,1 +1,8 @@
 Flybot - a simple, extensible IRC bot written in Common Lisp.
+
+Work in progress.  To use:
+
+(flybot:wconnect ...options...)
+(flybot:main-loop (first *connections*))
+
+[or use threads]

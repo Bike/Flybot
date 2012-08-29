@@ -92,15 +92,15 @@ with no arguments and the pair is removed.")
   (sb-ext:schedule-timer (sb-ext:make-timer func) seconds))
 
 ;; Convenience wrapper around irc:connect.  (Making for four or so layers of wrappin internally...
-(defun connect (&key
-		(server "irc.freenode.net")
-		(port :default)
-		(nick *nickname*)
-		(username (or *username* *nickname*))
-		(realname (or *realname* *nickname*))
-		(pass *password*)
-		(logfile *log* log-p)
-		channels)
+(defun wconnect (&key
+		 (server "irc.freenode.net")
+		 (port :default)
+		 (nick *nickname*)
+		 (username (or *username* *nickname*))
+		 (realname (or *realname* *nickname*))
+		 (pass *password*)
+		 (logfile *log* log-p)
+		 channels)
   (let ((connection (irc:connect :connection-type
 				 #-sbcl 'non-blocking-connection ;; so that we can have a proper event loop.
 				 #+sbcl 'connection ;; or just use sbcl's timers.
