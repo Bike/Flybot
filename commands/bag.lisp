@@ -20,4 +20,5 @@
 (defun bot-commands::item (sender dest connection text)
   "Throws an item at the recipient"
   (ensure-cooled 'item)
+  (unless *bag* (irc-user-error "No items bagged yet."))
   (reply sender dest connection "~a is thrown at ~a" (random-elt *bag*) text))
