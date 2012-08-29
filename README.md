@@ -19,7 +19,7 @@ use the underlying mechanism.
 WCONNECT is a simple wrapper around IRC:CONNECT.  The key arguments should
 be self-explanatory.
 
-<tt>*CONNECTIONS*</tt> is a list of connections.  STOP takes care of removing quit connections,
+\*CONNECTIONS\* is a list of connections.  STOP takes care of removing quit connections,
 so be wary.
 
 MAIN-LOOP takes a connection as an argument, and starts the main loop.  SPAWN-MAIN-LOOP
