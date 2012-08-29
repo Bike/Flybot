@@ -1,0 +1,65 @@
+Flybot - a simple, extensible IRC bot written in Common Lisp.
+
+Work in progress.  Contact the author for assistance if you use this library.
+
+# GETTING STARTED
+
+The best interface to use is the configuration file.  Once a config file is
+set up (see CONFIGURATION SYNTAX, below) the bot can be started with FLYBOT:START
+and stopped with FLYBOT:STOP.
+
+START takes one optional key argument, a configuration file's filename;
+the default is «[homedir]/.flybot».
+
+# SKIPPING CONFIGURATION
+
+If the configuration file mechanism isn't suitable for some reason, you can
+use the underlying mechanism.
+
+WCONNECT is a simple wrapper around IRC:CONNECT.  The key arguments should
+be self-explanatory.
+
+*CONNECTIONS* is a list of connections.  STOP takes care of removing quit connections,
+so be wary.
+
+MAIN-LOOP takes a connection as an argument, and starts the main loop.  SPAWN-MAIN-LOOP
+does the same, but in a new thread (you must have bordeaux-threads loaded - as of now
+(August 2012) it's a transitive dependency anyway).
+
+You can use IRC's functions JOIN, QUIT, etc. to deal with your connections.
+
+Example session:
+
+    (flybot:wconnect :server "irc.freenode.net" :channels '("#lispbot"))
+    (flybot:main-loop (first flybot:*connections*))
+    [...]
+    [interrupt]
+    (flybot:quit (first flybot:*connections*) "Bye!")
+
+# CONFIGURATION SYNTAX
+
+An example configuration file should be provided as *example_config.sexp*.
+
+A configuration file consists of a series of Lisp forms,
+each of which should be one of the following directives:
+
+    (nickname ...)
+    (username ...)
+    (realname ...)
+    (pass ...)
+
+Each of the above sets the global configuration value appropriately.
+
+    (logfile ...)
+
+The argument should be a filename, which is used for logging output.
+
+    (server ...)
+
+Takes two arguments, the server address and a port to connect on.
+Additional directives may be specified as additional arguments.  These
+directives are then set on a per-server basis, rather than globally.
+
+Additionally, within `(server ...)` a `(channel ...)` directive is available.
+The argument should be a channel name, which is autojoined on connection
+to that server.
