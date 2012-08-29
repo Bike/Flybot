@@ -9,7 +9,7 @@ set up (see CONFIGURATION SYNTAX, below) the bot can be started with FLYBOT:STAR
 and stopped with FLYBOT:STOP.
 
 START takes one optional key argument, a configuration file's filename;
-the default is «[homedir]/.flybot».
+the default is *[homedir]/.flybot*.
 
 # SKIPPING CONFIGURATION
 
@@ -19,7 +19,7 @@ use the underlying mechanism.
 WCONNECT is a simple wrapper around IRC:CONNECT.  The key arguments should
 be self-explanatory.
 
-*CONNECTIONS* is a list of connections.  STOP takes care of removing quit connections,
+<tt>*CONNECTIONS*</tt> is a list of connections.  STOP takes care of removing quit connections,
 so be wary.
 
 MAIN-LOOP takes a connection as an argument, and starts the main loop.  SPAWN-MAIN-LOOP
