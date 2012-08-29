@@ -198,6 +198,13 @@ with no arguments and the pair is removed.")
   "Convenience wrapper for (error 'irc-user-error :reply (format nil ...))"
   (error 'irc-user-error :reply (apply #'format nil string args)))
 
+;;; Consider:
+;;;  1) generally making this less ugly
+;;;  2) moving commands into a hash (duh)
+;;;  3) binding source+dest+connection as specials, and having reply act on them
+;;;     * possibly with a nice "if they're all nil just write to standard output" for dbug
+;;;     * providing a more general SEND or whatever for when you need to message someone specifically
+
 (defun command-dispatcher (message)
   (multiple-value-bind (command rest)
       (split-sequence #\Space (second (arguments message)) :count 1 :remove-empty-subseqs t)

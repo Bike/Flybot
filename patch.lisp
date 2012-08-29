@@ -11,13 +11,16 @@
 
 (in-package :flybot)
 
+;;; FIXME: this deserves to be more than a patch.  CL-IRC handles most things well with hooks
+;;;  but this handler-binding stuff is important.
+
 (defun main-loop (connection)
   (handler-bind
       ((no-such-reply
 	(lambda (c)
 	  ;; ignore it and keep going
 	  (format (client-stream connection) "Unknown IRC numeric: ~d" (irc::reply-number c)) ; reply-number should be exp
-	  (invoke-restart 'continue)))
+	  (continue c)))
        (error
 	(lambda (e)
 	  (format (client-stream connection) "~a ERROR caught by ~a: ~a~%" (format-time) 'main-loop e)
