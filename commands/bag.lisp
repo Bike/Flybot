@@ -17,6 +17,5 @@
   (nth (random (length list)) list))
 
 (defun bot-commands::item (sender dest connection text)
-  (declare (ignore text))
-  "Gets an item"
-  (reply sender dest connection "~a" (random-nth *bag*)))
+  "Throws an item at the recipient"
+  (reply sender dest connection "~a is thrown at ~a" (random-nth *bag*) text))
