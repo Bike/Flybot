@@ -16,7 +16,7 @@
       ((no-such-reply
 	(lambda (c)
 	  ;; ignore it and keep going
-	  (format (client-stream connection) "Unknown IRC numeric: ~d" (reply-number c))
+	  (format (client-stream connection) "Unknown IRC numeric: ~d" (irc::reply-number c)) ; reply-number should be exp
 	  (invoke-restart 'continue)))
        (error
 	(lambda (e)

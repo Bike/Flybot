@@ -18,13 +18,9 @@
   (setf (symbol-function alias) (symbol-function fn)))
 
 (defvar *nickname* "Spacebar")
-(defun nickname (name) (when (stringp name) (setf *nickname* name)))
 (defvar *password* nil)
-(defun password (pass) (when (stringp pass) (setf *password* pass)))
 (defvar *username* nil)
-(defun username (name) (when (stringp name) (setf *username* name)))
 (defvar *realname* nil)
-(defun realname (name) (when (stringp name) (setf *realname* name)))
 
 (defvar *log* t)
 (defun logfile (filename)
