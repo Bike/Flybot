@@ -74,6 +74,7 @@ with no arguments and the pair is removed.")
 #-sbcl
 (defmethod irc:read-message-loop ((connection non-blocking-connection))
   (loop while (irc::connectedp connection)
+     ;; KLUDGE: Should poll properly.
      do (read-message connection)
        (setf *timers* (remove-if
 		       (lambda (x)
@@ -176,6 +177,8 @@ with no arguments and the pair is removed.")
   (multiple-value-bind (second minute hour) (get-decoded-time)
     (format nil "~2,'0d:~2,'0d:~2,'0d" hour minute second)))
 
+;;; FIXME: Logging mechanism does not record server info!
+
 (defun log-privmsg (message)
   (format (client-stream (connection message))
 	  "~a (to ~a) <~a> ~a~%"
@@ -204,6 +207,7 @@ with no arguments and the pair is removed.")
 ;;;  3) binding source+dest+connection as specials, and having reply act on them
 ;;;     * possibly with a nice "if they're all nil just write to standard output" for dbug
 ;;;     * providing a more general SEND or whatever for when you need to message someone specifically
+;;;  4) channel-specific configuration for commands should require things here
 
 (defun command-dispatcher (message)
   (multiple-value-bind (command rest)

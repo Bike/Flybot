@@ -11,6 +11,7 @@
 	       (:file "main" :depends-on ("package"))
 	       (:file "cooldown" :depends-on ("main"))
 	       (:file "patch" :depends-on ("main"))
+	       (:file "config" :depends-on ("main"))
 	       (:file "url" :depends-on ("package"))
 	       (:file "misc" :depends-on ("package" "main")) ;; on main for irc-user-error; this shouldn't be
 	       (:module "commands"
