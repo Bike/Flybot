@@ -17,5 +17,6 @@
 			:components ((:file "basics")
 				     (:file "bag")
 				     (:file "booru")
+				     (:file "roll")
 				     (:file "decide")
 				     (:file "vote")))))
