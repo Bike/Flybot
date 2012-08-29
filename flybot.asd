@@ -9,11 +9,12 @@
   :depends-on (#:cl-irc #:split-sequence #:cl-ppcre #:drakma #:cl-json)
   :components ((:file "package")
 	       (:file "main" :depends-on ("package"))
+	       (:file "cooldown" :depends-on ("main"))
 	       (:file "patch" :depends-on ("main"))
 	       (:file "url" :depends-on ("package"))
 	       (:file "misc" :depends-on ("package" "main")) ;; on main for irc-user-error; this shouldn't be
 	       (:module "commands"
-			:depends-on ("package" "main" "url" "misc")
+			:depends-on ("package" "cooldown" "main" "url" "misc")
 			:components ((:file "basics")
 				     (:file "bag")
 				     (:file "booru")

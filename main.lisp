@@ -39,9 +39,9 @@
 with no arguments and the pair is removed.")
 
 #-sbcl
-(defun register-timer (func seconds)
+(defun register-timer (name func seconds)
   "Register a function to run in SECONDS seconds from the time REGISTER-TIMER is called."
-  (push (cons (+ (get-universal-time) seconds) func) *timers*))
+  (push (list* (+ (get-universal-time) seconds) name func) *timers*))
 
 #-sbcl
 (defclass non-blocking-connection (irc:connection) ())
@@ -78,14 +78,20 @@ with no arguments and the pair is removed.")
        (setf *timers* (remove-if
 		       (lambda (x)
 			 (when (< (car x) (get-universal-time))
-			   (funcall (cdr x))
+			   (funcall (cddr x))
 			   t))
 		       *timers*))))
 
 #+sbcl
-(defun register-timer (func seconds)
+(defun register-timer (name func seconds)
   "Register a function to run in SECONDS seconds from the time REGISTER-TIMER is called."
-  (sb-ext:schedule-timer (sb-ext:make-timer func) seconds))
+  (sb-ext:schedule-timer (sb-ext:make-timer func :name name) seconds))
+
+(defun find-timer (name)
+  "Find the timer with the name NAME, or NIL if there is no such timer."
+  (find name
+	#+sbcl (sb-ext:list-all-timers) #-sbcl *timers*
+	:key #+sbcl #'sb-ext:timer-name #-sbcl #'second))
 
 ;; Convenience wrapper around irc:connect.  (Making for four or so layers of wrappin internally...
 (defun wconnect (&key

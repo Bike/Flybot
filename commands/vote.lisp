@@ -2,6 +2,7 @@
 
 (defvar *vote-options* nil)
 ;; Really that should be in a closure for vote, but meh?, and also I don't know how (declare special) works.
+;; FIXME: I now know how declare special works, but closures make debugging harder.
 ;;(defcmd vote (sender dest connection text)
 (defun bot-commands::vote (sender dest connection text)
   "Start a vote (:vote seconds option1 | option2 ...) or vote in the current election (:vote option)."
@@ -22,7 +23,7 @@
 			(mapcar #'first winners)
 			(second (first winners))))
 	     (setf *vote-options* nil))))
-    (when (alpha-char-p (aref dest 0)) (irc-user-error "\"One man, one vote\", I see?"))
+    (when (alpha-char-p (aref dest 0)) (irc-user-error "\"One man, one vote\", I see?")) ; hack to determine private message
     (if *vote-options*
 	(let ((choice (or (ignore-errors (1- (parse-integer text)))
 			  (position text *vote-options* :key #'first :test #'string-equal)
@@ -51,6 +52,6 @@
 		(progn
 		  (setf *vote-options*
 			(mapcar (lambda (x) (list x 0 '())) prospective))
-		  (register-timer #'timer-function timeout)
+		  (register-timer 'voting #'timer-function timeout)
 		  (reply sender dest connection "Voting starts now!  You have ~d seconds to decide. ~:{~d) ~a~:^, ~}."
 			 timeout (let ((c 0)) (mapcar (lambda (x) (incf c) (list c (first x))) *vote-options*))))))))))
