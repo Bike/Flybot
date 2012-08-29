@@ -4,6 +4,7 @@
 (asdf:defsystem #:flybot
   :description "A simple, extensible IRC bot written in Common Lisp."
   :author "Bike"
+  :license "WTFPL"
   :version "0.2.0"
   :depends-on (#:cl-irc #:split-sequence #:cl-ppcre #:drakma #:cl-json)
   :components ((:file "package")
@@ -14,6 +15,7 @@
 	       (:module "commands"
 			:depends-on ("package" "main" "url" "misc")
 			:components ((:file "basics")
+				     (:file "bag")
 				     (:file "booru")
 				     (:file "decide")
 				     (:file "vote")))))

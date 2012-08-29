@@ -1,6 +1,6 @@
 (defpackage #:flybot
   (:use #:cl #:irc #:split-sequence)
-  (:export #:wconnect
+  (:export #:wconnect #:main-loop
 	   ;; reexports
 	   #:read-message #:read-message-loop))
 
