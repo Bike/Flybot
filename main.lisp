@@ -101,19 +101,19 @@ with no arguments and the pair is removed.")
 		(pass *password*)
 		(logfile *log* log-p)
 		channels)
-  (let ((connection (connect :connection-type
-			     #-sbcl 'non-blocking-connection ;; so that we can have a proper event loop.
-			     #+sbcl 'connection ;; or just use sbcl's timers.
-			     :server server
-			     :port port
-			     :nickname nick
-			     :username username
-			     :realname realname
-			     :password pass
-			     :logging-stream (if log-p
-						 (open logfile :direction :output :if-exists :append
-						       :if-does-not-exist :create)
-						 logfile))))
+  (let ((connection (irc:connect :connection-type
+				 #-sbcl 'non-blocking-connection ;; so that we can have a proper event loop.
+				 #+sbcl 'connection ;; or just use sbcl's timers.
+				 :server server
+				 :port port
+				 :nickname nick
+				 :username username
+				 :realname realname
+				 :password pass
+				 :logging-stream (if log-p
+						     (open logfile :direction :output :if-exists :append
+							   :if-does-not-exist :create)
+						     logfile))))
     (push connection *connections*)
     (add-hook connection 'irc-privmsg-message 'command-dispatcher)
     (add-hook connection 'irc-privmsg-message 'log-privmsg)
