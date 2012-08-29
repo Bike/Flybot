@@ -3,6 +3,7 @@
 ;(defcmd echo (sender dest connection text)
 (defun bot-commands::echo (sender dest connection text)
   "Echoes your text back to you.  Also known as SAY."
+  (ensure-cooled 'echo)
   (reply sender dest connection text))
 (alias 'bot-commands::say 'bot-commands::echo)
 (setf (documentation 'bot-commands::say 'function) "Echoes your text back to you.  Also known as ECHO.") ;; ugh
