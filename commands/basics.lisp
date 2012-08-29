@@ -41,7 +41,8 @@
 For further help, use :help name."
 	       (let (accum) (do-symbols (x :bot-commands accum) (when (fboundp x) (push (symbol-name x) accum))))
 	       (let (accum) (maphash (lambda (k v) (declare (ignore v)) (push k accum)) *bot-info*) accum))
-	(or (documentation text 'bot-info)
+	(if (documentation text 'bot-info)
+	    (reply sender dest connection (documentation text 'bot-info))
 	    (let ((command (command-symbol text)))
 	      (if command
 		  (let ((docs (documentation command 'function)))
