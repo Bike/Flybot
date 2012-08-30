@@ -2,32 +2,37 @@
 
 (defconstant command-character #\:)
 
-(defvar *debug-p* nil)
+;; no actual effect right now, and probably there should be a better mechanism
+(defvar *debug-p* nil "Whether debugging is enabled.")
 
 ;; Change args to (a b c d)...?
 (defmacro defcmd (name args &body body)
+  "Deprecated"
   (if (= 4 (length args))
       `(defun ,(intern (symbol-name name) :bot-commands) ,args ,@body)
       (error "ERROR: (defcmd ~a ~a ...) has an invalid number of arguments - commands have four."
 	     name args)))
 
 (defun alias (alias fn)
+  "Set ALIAS to point at the same function FN does."
   (declare (type symbol alias fn))
 ;  (setf (symbol-function (intern (symbol-name alias) :bot-commands))
 ;	(symbol-function (intern (symbol-name fn) :bot-commands))))
   (setf (symbol-function alias) (symbol-function fn)))
 
-(defvar *nickname* "Spacebar")
-(defvar *password* nil)
-(defvar *username* nil)
-(defvar *realname* nil)
+(defvar *nickname* "Spacebar" "Default nickname.")
+(defvar *password* nil "Default password for servers.")
+(defvar *username* nil "Default username (if NIL, use *NICKNAME*).")
+(defvar *realname* nil "Default real name (if NIL, use *NICKNAME*).")
 
-(defvar *log* t)
+(defvar *log* t "Default logging stream.")
 (defun logfile (filename)
+  "Deprecated"
   (when (stringp filename)
     (setf *log* (open filename :direction :output :if-exists :append :if-does-not-exist :create))))
 
-(defvar *connections* '())
+(defvar *connections* '()
+  "A list of connection objects.  May or may not all be actually connected.")
 
 ;;; Here follows Shit To Make Timers Work.  Should use an external library like oconnore's multi-timers,
 ;;;  but that's not in quicklisp at the moment and I'm not feeling that adventurous.
@@ -94,7 +99,6 @@ with no arguments and the pair is removed.")
 	#+sbcl (sb-ext:list-all-timers) #-sbcl *timers*
 	:key #+sbcl #'sb-ext:timer-name #-sbcl #'second))
 
-;; Convenience wrapper around irc:connect.  (Making for four or so layers of wrappin internally...
 (defun wconnect (&key
 		 (server "irc.freenode.net")
 		 (port :default)
@@ -104,6 +108,7 @@ with no arguments and the pair is removed.")
 		 (pass *password*)
 		 (logfile *log* log-p)
 		 channels)
+  "Convenience wrapper around IRC:CONNECT.  Attaches appropriate hooks, joins channels, and sets up the log."
   (let ((connection (irc:connect :connection-type
 				 #-sbcl 'non-blocking-connection ;; so that we can have a proper event loop.
 				 #+sbcl 'connection ;; or just use sbcl's timers.
@@ -133,6 +138,7 @@ with no arguments and the pair is removed.")
     connection))
 
 (defun clear-commands ()
+  "Clear all bot commands."
   (delete-package :bot-commands)
   (make-package :bot-commands))
 
@@ -140,11 +146,14 @@ with no arguments and the pair is removed.")
 ;; multiple >1024 checks... though, this is an edge case, and efficiency isn't that important.
 
 (defun buffer-privmsg (connection to text)
+  "Send a privmsg TEXT to TO on CONNECTION, making sure not to exceed the length limit."
   (if (> (length text) 400)
       (privmsg connection to (concatenate 'string (subseq text 0 400) "..."))
       (privmsg connection to text)))
 
 (defun reply (sender dest connection text &rest args)
+  ;; needs major interface change, see below somewhere
+  "Send a message to SENDER on DEST on CONNECTION.  TEXT is a format control, ARGS are its args."
   (if (string= dest (irc:nickname (irc:user connection)))
       (buffer-privmsg connection sender (apply #'format nil text args))
       (buffer-privmsg connection dest (format nil "14~a: ~?" sender text args))))
@@ -154,13 +163,15 @@ with no arguments and the pair is removed.")
   (format nil "~cACTION ~a~c" (code-char 1) text (code-char 1)))
 
 (defun command-symbol (string)
+  "Find the symbol for a command, given a command's name."
   (let ((symbol (find-symbol (string-upcase string) :bot-commands)))
     (if (and symbol (fboundp symbol))
 	symbol
 	nil)))
 
 (defun rejoin-hook (message)
-  (format (irc:client-stream (connection message))
+  "Hook for rejoining channels after being kicked."
+  (format (client-stream (connection message))
 	  "~a kicked by ~a (~a)~%"
 	  (second (arguments message))
 	  (source message)
@@ -168,25 +179,33 @@ with no arguments and the pair is removed.")
   (when (string= (second (arguments message)) (nickname (user (connection message))))
     (join (connection message) (first (arguments message)))
     (privmsg (connection message) (first (arguments message))
-	     ;; FIXME: This is silly.
+	     ;; FIXME: This is silly.  It should be configurably silly.
 	     (random-choice "(╬ ಠ益ಠ)" ">:|" "<.<" ":'(" ">:D"))))
 
-(defun random-choice (&rest list) (nth (random (length list)) list))
+(defun random-choice (&rest list)
+  ;; dumb
+  "Pick an element random from the arglist."
+  (nth (random (length list)) list))
 
 (defun format-time ()
+  "Return a string representation of the present time."
   (multiple-value-bind (second minute hour) (get-decoded-time)
     (format nil "~2,'0d:~2,'0d:~2,'0d" hour minute second)))
 
 ;;; FIXME: Logging mechanism does not record server info!
+;;; Logging should use CL-IRC's CLIENT-LOG or the like, not all this stuff.
+;;; With customization hooks I guess, but that requires hacking on that library if... bleh, just bleh
 
 (defun log-privmsg (message)
+  "Log a PRIVMSG to the connection's log stream."
   (format (client-stream (connection message))
 	  "~a (to ~a) <~a> ~a~%"
 	  (format-time) (first (arguments message)) (source message) (second (arguments message)))
   (force-output (client-stream (connection message))) ;; Not strictly necessary.
-  t) ;; so that it's "handled"
+  t) ;; so that it's "handled" (by CL-IRC)
 
 (defun log-action-message (message)
+  "Log a CTCP ACTION message (/me ...) to the connection's log stream."
   (format (client-stream (connection message))
 	  "~a (to ~a) ***~a ~a~%"
 	  (format-time) (first (arguments message)) (source message)
@@ -208,8 +227,10 @@ with no arguments and the pair is removed.")
 ;;;     * possibly with a nice "if they're all nil just write to standard output" for dbug
 ;;;     * providing a more general SEND or whatever for when you need to message someone specifically
 ;;;  4) channel-specific configuration for commands should require things here
+;;;  5) should return t (for handledness) if it finds a command.  or the command's result?
 
 (defun command-dispatcher (message)
+  "Dispatch the given PRIVMSG to the appropriate command (if there is one.)"
   (multiple-value-bind (command rest)
       (split-sequence #\Space (second (arguments message)) :count 1 :remove-empty-subseqs t)
     (let ((command (first command)))

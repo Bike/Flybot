@@ -15,6 +15,7 @@
 	 (reply sender dest connection "Added!"))))
 
 (defun random-elt (seq)
+  "Return a random element of SEQ."
   (elt seq (random (length seq))))
 
 (defun bot-commands::item (sender dest connection text)

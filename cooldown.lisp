@@ -1,6 +1,6 @@
 (in-package :flybot)
 
-;;; TODO: Parameterize by user?
+;;; TODO: Parameterize by user?  And by command, general config rewrite etc.
 
 (defvar *cooldown* nil
   "If this variable is a number, some commands will have a cooldown timer of that interval (in seconds).
@@ -9,6 +9,7 @@ If it's an alist, an entry of (COMMAND . n) indicates a cooldown time of n for t
 (define-condition botspam (irc-user-error) ())
 
 (defun get-cooldown (name)
+  "Get the cooldown time for NAME."
   (typecase *cooldown*
     (integer *cooldown*)
     (cons (cdr (assoc name *cooldown*)))

@@ -15,6 +15,7 @@
 ;;;  but this handler-binding stuff is important.
 
 (defun main-loop (connection)
+  "Handle and dispatch messages on CONNECTION."
   (handler-bind
       ((no-such-reply
 	(lambda (c)
