@@ -14,12 +14,18 @@
    #:serialize #:deserialize
    ;; REST with HTTP (i.e. almost any REST)
    #:http-store #:define-http-method #:http-error
+   #:store-uri #:store-content-type
    ;; JSON serialization/deserialization (might be factored into another thing)
+   #:json-store
+   #:json-store-classes
    #:no-json-serializer #:no-json-deserializer
+   #:no-json-serializer-object #:no-json-deserializer-keys #:no-json-deserializer-values
    #:slots-match ; kind of an outlier here
    ))
 
 (in-package #:REST)
+
+;;; General
 
 (defclass store () ())
 
@@ -33,6 +39,8 @@
   (:documentation "Alter STORE's copy of RESOURCE to match the local one."))
 (defgeneric destroy (store resource)
   (:documentation "Delete RESOURCE from STORE."))
+
+;;; HTTP
 
 (defgeneric serialize (store resource stream)
   (:documentation "Output some externalizable representation of RESOURCE as needed by STORE into STREAM."))
@@ -71,6 +79,10 @@
 			 (getf options :error-status))
 	       (t (http-error 'http-error))))))))
 
+;;; JSON
+
+(push '("application" . "json") drakma:*text-content-types*)
+
 (defclass json-store (http-store)
   ((classes :initarg :classes :accessor json-store-classes))
   (:default-initargs :content-type '("application" . "json")))
@@ -97,6 +109,7 @@
 (defgeneric slots-match (class keys values))
 
 (defmethod slots-match ((class standard-class) keys values)
+  (c2mop:ensure-finalized class)
   (let ((slots (c2mop:class-slots class)))
     (mapc (lambda (key value)
 	    (let ((slot (find key slots :key #'c2mop:slot-definition-name)))
