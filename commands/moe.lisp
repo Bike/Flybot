@@ -56,7 +56,7 @@
 (define-http-method all ((store moeconomy)) ())
 (define-http-method stats ((store moeconomy)) () (:uri-append "stats"))
 (define-http-method get-by-id ((store moeconomy) (id integer)) ()
-  (:uri-append (format nil "?id=~d" id)))
+  (:uri-append (format nil "~d" id)))
 (define-http-method get-by-name ((store moeconomy) (name string)) ()
   (:error-status ((404 (http-error 'no-such-moe :name name))))
   (:uri-append name))
