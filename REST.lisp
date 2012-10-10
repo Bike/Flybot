@@ -114,7 +114,9 @@
   (c2mop:ensure-finalized class)
   (let ((slots (c2mop:class-slots class)))
     (mapc (lambda (key value)
-	    (let ((slot (find key slots :key #'c2mop:slot-definition-name)))
+	    (let ((slot (find (symbol-name key) slots
+			      :key (compose #'symbol-name #'c2mop:slot-definition-name)
+			      :test #'string=)))
 	      (cond (slot
 		     (unless (typep value (c2mop:slot-definition-type slot))
 		       (return-from slots-match nil))

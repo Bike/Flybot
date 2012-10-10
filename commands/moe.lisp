@@ -5,6 +5,7 @@
 (defpackage #:moe
   (:use #:cl #:REST)
   (:export #:*api-key* #:moeconomy
+	   #:stats #:stats.accounts #:stats.moepoints #:stats.aliases
 	   #:no-such-moe #:no-such-moe-name
 	   #:moe-exists #:moe-exists-name
 	   #:moeconomist
@@ -36,6 +37,8 @@
   (modify-by-name store (moeconomist-nick resource) resource))
 (defmethod retrieve ((store moeconomy) (resource moeconomist))
   (get-by-name store (moeconomist-nick resource)))
+(defmethod destroy ((store moeconomy) (resource moeconomist))
+  (delete-by-name store (moeconomist-nick resource) resource))
 
 (defclass uploading.moeconomist ()
   ((key :initarg :key)
@@ -77,6 +80,7 @@
       :content-type "application/json"
       :content (with-output-to-string (*standard-output*)
 		 (serialize store (prepare-for-upload object) *standard-output*)))
+  (:no-return t)
   (:error-status ((409 (http-error 'moe-exists :name name))
 		  (403 (error "The API key was refused."))))
   (:uri-append (format nil "/create/~a" name)))
@@ -85,9 +89,18 @@
       :content-type "application/json"
       :content (with-output-to-string (*standard-output*)
 		 (serialize store (prepare-for-upload object) *standard-output*)))
+  (:no-return t)
   (:uri-append (format nil "/modify/~a" name))
   (:error-status ((404 (http-error 'no-such-moe :name name))
 		  (403 (error "The API key was refused.")))))
+(define-http-method delete-by-name ((store moeconomy) (name string) (object moeconomist))
+    (:method :delete
+      :content-type "application/json"
+      :content (with-output-to-string (*standard-output*)
+		 (serialize store (prepare-for-upload object) *standard-output*)))
+  (:no-return t)
+  (:uri-append (format nil "/nick/~a" name))
+  (:error-status ((404 (error "The API key was refused.")))))
 
 ;;; bot side
 
@@ -95,10 +108,19 @@
 
 (defvar *moeconomy*)
 
+(defun bot-commands::stats (sender dest connection text)
+  "Retrieve some statistics about the overall state of the moeconomy."
+  (declare (ignore text))
+  (let ((stats (let ((*package* (find-package :moe))) (moe:stats *moeconomy*))))
+    (reply sender dest connection
+	   "The moeconomy presently consists of ~d users, with ~d moepoints and ~d aliases between them."
+	   (moe:stats.accounts stats) (moe:stats.moepoints stats) (moe:stats.aliases stats))))
+
 (defun bot-commands::register (sender dest connection text)
+  "Register yourself in the moeconomy.  (arguments are ignored)"
   (declare (ignore text))
   (handler-case
-      (let ((*package* (find-package :moe))) ;; necessary due to how cl-json deals with symbols.  not sure how to improve.
+      (progn
 	(moe:create *moeconomy*
 		    (make-instance 'moe:moeconomist :nick sender :aliases #() :moepoints 1000))
 	(reply sender dest connection
@@ -109,12 +131,12 @@
 	     "~a is already registered." (moe:moe-exists-name e)))))
 
 (defun bot-commands::appraise (sender dest connection text)
+  "Determine how many points the user named in the argument has."
   (handler-case
-      (let ((*package* (find-package :moe)))
-	(reply sender dest connection
-	       "~a has ~d moepoints."
-	       text
-	       (moe:moepoints (moe:retrieve *moeconomy* (make-instance 'moe:moeconomist :nick text)))))
+      (reply sender dest connection
+	     "~a has ~d moepoints."
+	     (string-trim " " text)
+	     (moe:moepoints (moe:retrieve *moeconomy* (make-instance 'moe:moeconomist :nick text))))
     (moe:no-such-moe (e)
       (reply sender dest connection
 	     "~a is not a registered user of the moeconomy." (moe:no-such-moe-name e))))))
