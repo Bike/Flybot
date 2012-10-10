@@ -75,7 +75,7 @@
 		     (deserialize ,(ensure-car store) ,content)
 		  (when ,close (close ,content))))
 	       ,@(mapcar (lambda (clause)
-			   `((= ,code ,(first clause)) (error ,@(rest clause))))
+			   `((= ,code ,(first clause)) ,@(rest clause)))
 			 (getf options :error-status))
 	       (t (http-error 'http-error))))))))
 
