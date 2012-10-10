@@ -72,7 +72,9 @@
 		(apply #'error class :code ,code :reason ,reason :content ,content other-initargs)))
 	 (cond ((<= 200 ,code 299)
 		(unwind-protect
-		     (deserialize ,(ensure-car store) ,content)
+		     ,(if (getf options :no-return)
+			  `(values)
+			  `(deserialize ,(ensure-car store) ,content))
 		  (when ,close (close ,content))))
 	       ,@(mapcar (lambda (clause)
 			   `((= ,code ,(first clause)) ,@(rest clause)))
